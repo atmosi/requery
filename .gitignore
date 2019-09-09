@@ -6,3 +6,6 @@
 /build
 /captures
 *.iml
+requery-kotlin/out
+requery-processor/out
+requery/out

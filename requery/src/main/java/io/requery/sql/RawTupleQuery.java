@@ -96,7 +96,8 @@ class RawTupleQuery extends PreparedQueryOperation implements Supplier<Result<Tu
                         statement.close();
                     } finally {
                         try {
-                            connection.close();
+                            Boolean closeConnection = !(configuration.getConnection() instanceof UncloseableConnection);
+                            if (closeConnection) connection.close();
                         } catch (Exception ignored) {
                         }
                     }
@@ -142,8 +143,11 @@ class RawTupleQuery extends PreparedQueryOperation implements Supplier<Result<Tu
                 expressions = new Expression[columns];
                 Mapping mapping = configuration.getMapping();
 
+                // if connection Uncloseable (in transaction) don't close after this result
+                Boolean closeConnection = !(configuration.getConnection() instanceof UncloseableConnection);
                 CloseableIterator<Tuple> iterator =
-                    new ResultSetIterator<>(this, results, null, true, true);
+                    new ResultSetIterator<>(this, results, null, true,
+                        closeConnection);
                 if (iterator.hasNext()) { // need to be positioned at some row (for android)
                     for (int i = 0; i < columns; i++) {
                         String name = metadata.getColumnName(i + 1);
